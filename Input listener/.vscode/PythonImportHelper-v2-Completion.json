@@ -35,19 +35,11 @@
         "documentation": {}
     },
     {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
         "label": "on_press",
         "kind": 2,
         "importPath": "input-Listener",
         "description": "input-Listener",
-        "peekOfCode": "def on_press(key):\n    # 记录特殊退出按键，如Esc\n    if key == keyboard.Key.esc:\n        # 停止监听\n        return False\n    try:\n        # 记录按键（转换为字符串以便记录）\n        key_buffer.append(str(key))\n    except AttributeError:\n        # 处理特殊按键",
+        "peekOfCode": "def on_press(key):\n    # 记录特殊退出按键，如Esc\n    if key == keyboard.Key.esc:\n        exit_event.set()\n        # 停止监听\n        return False\n    try:\n        # 记录按键（转换为字符串以便记录）\n        key_buffer.append(str(key))\n    except AttributeError:",
         "detail": "input-Listener",
         "documentation": {}
     },
@@ -56,7 +48,7 @@
         "kind": 2,
         "importPath": "input-Listener",
         "description": "input-Listener",
-        "peekOfCode": "def write_to_file():\n    while True:\n        if key_buffer:\n            logging.info(' '.join(key_buffer))\n            key_buffer.clear()\n        time.sleep(10)\n# 监听键盘\ndef start_listener():\n    print(\"按键监听已启动。按Esc键退出。\")\n    with keyboard.Listener(on_press=on_press) as listener:",
+        "peekOfCode": "def write_to_file():\n    while not exit_event.is_set():\n        if key_buffer:\n            logging.info(' '.join(key_buffer))\n            key_buffer.clear()\n        time.sleep(10)\n# 监听键盘\ndef start_listener():\n    print(\"按键监听已启动。按Esc键退出。\")\n    with keyboard.Listener(on_press=on_press) as listener:",
         "detail": "input-Listener",
         "documentation": {}
     },
@@ -65,7 +57,7 @@
         "kind": 2,
         "importPath": "input-Listener",
         "description": "input-Listener",
-        "peekOfCode": "def start_listener():\n    print(\"按键监听已启动。按Esc键退出。\")\n    with keyboard.Listener(on_press=on_press) as listener:\n        listener.join()\n    print(\"按键监听已停止。\")\ndef main():\n    # 创建并启动定时保存的线程\n    thread = threading.Thread(target=write_to_file, daemon=True)\n    thread.start()\n    # 开始监听键盘",
+        "peekOfCode": "def start_listener():\n    print(\"按键监听已启动。按Esc键退出。\")\n    with keyboard.Listener(on_press=on_press) as listener:\n        listener.join()\n    print(\"按键监听已停止。\")\ndef main():\n    # 创建并启动定时保存的线程\n    write_thread = threading.Thread(target=write_to_file, daemon=True)\n    write_thread.start()\n    # 开始监听键盘",
         "detail": "input-Listener",
         "documentation": {}
     },
@@ -74,7 +66,7 @@
         "kind": 2,
         "importPath": "input-Listener",
         "description": "input-Listener",
-        "peekOfCode": "def main():\n    # 创建并启动定时保存的线程\n    thread = threading.Thread(target=write_to_file, daemon=True)\n    thread.start()\n    # 开始监听键盘\n    start_listener()\n    thread.join()\nif __name__ == '__main__':\n    main()",
+        "peekOfCode": "def main():\n    # 创建并启动定时保存的线程\n    write_thread = threading.Thread(target=write_to_file, daemon=True)\n    write_thread.start()\n    # 开始监听键盘\n    start_listener()\n    write_thread.join()\nif __name__ == '__main__':\n    main()",
         "detail": "input-Listener",
         "documentation": {}
     },
@@ -83,7 +75,16 @@
         "kind": 5,
         "importPath": "input-Listener",
         "description": "input-Listener",
-        "peekOfCode": "key_buffer = []\n# 按键记录函数\ndef on_press(key):\n    # 记录特殊退出按键，如Esc\n    if key == keyboard.Key.esc:\n        # 停止监听\n        return False\n    try:\n        # 记录按键（转换为字符串以便记录）\n        key_buffer.append(str(key))",
+        "peekOfCode": "key_buffer = []\nexit_event = threading.Event()\n# 按键记录函数\ndef on_press(key):\n    # 记录特殊退出按键，如Esc\n    if key == keyboard.Key.esc:\n        exit_event.set()\n        # 停止监听\n        return False\n    try:",
+        "detail": "input-Listener",
+        "documentation": {}
+    },
+    {
+        "label": "exit_event",
+        "kind": 5,
+        "importPath": "input-Listener",
+        "description": "input-Listener",
+        "peekOfCode": "exit_event = threading.Event()\n# 按键记录函数\ndef on_press(key):\n    # 记录特殊退出按键，如Esc\n    if key == keyboard.Key.esc:\n        exit_event.set()\n        # 停止监听\n        return False\n    try:\n        # 记录按键（转换为字符串以便记录）",
         "detail": "input-Listener",
         "documentation": {}
     }
