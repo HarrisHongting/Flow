@@ -3,8 +3,8 @@ import shutil
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# 监控的源硬盘路径
-source_drive = "C:\\"
+# 监控的源硬盘路径列表
+source_drives = ["C:\\", "D:\\", "E:\\"]  # 根据需要添加或修改路径
 
 # 目标文件夹路径
 destination_folder = "D:\\NewFiles\\"
@@ -24,7 +24,7 @@ system_folders = [
     "C:\\ProgramData",
     "C:\\Users\\Public",
     "C:\\System Volume Information",
-    "C:\\Users\\jiawe\AppData"
+    "C:\\Users\\jiawe\\AppData"
 ]
 
 # 文件事件处理程序
@@ -34,14 +34,14 @@ class FileEventHandler(FileSystemEventHandler):
             file_path = event.src_path
             file_name = os.path.basename(file_path)
             destination_path = os.path.join(destination_folder, file_name)
-
+            
             # 检查文件是否在系统文件夹中
             is_system_file = False
             for folder in system_folders:
                 if file_path.startswith(folder):
                     is_system_file = True
                     break
-
+            
             if not is_system_file:
                 # 检查源文件是否存在
                 if os.path.exists(file_path):
@@ -57,15 +57,20 @@ class FileEventHandler(FileSystemEventHandler):
                 else:
                     print(f"源文件不存在: {file_path}")
 
-# 创建文件系统观察器
-observer = Observer()
-event_handler = FileEventHandler()
-observer.schedule(event_handler, source_drive, recursive=True)
-observer.start()
+# 创建文件系统观察器列表
+observers = []
+for source_drive in source_drives:
+    observer = Observer()
+    event_handler = FileEventHandler()
+    observer.schedule(event_handler, source_drive, recursive=True)
+    observer.start()
+    observers.append(observer)
 
 try:
     while True:
         pass
 except KeyboardInterrupt:
-    observer.stop()
-observer.join()
+    for observer in observers:
+        observer.stop()
+    for observer in observers:
+        observer.join()
